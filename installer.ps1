@@ -1,47 +1,50 @@
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request));
-});
-
-async function handleRequest(request) {
-  // Parse the requested URL
-  const url = new URL(request.url);
-  const path = url.pathname;
-
-  // Serve the PowerShell script only for the /get path
-  if (path === '/get') {
-    try {
-      // Fetch the PowerShell script from GitHub
-      const scriptUrl = 'https://raw.githubusercontent.com/ShpetimDraugsha/digitalschool/main/installer.ps1';
-      const response = await fetch(scriptUrl);
-
-      // Check if the fetch was successful
-      if (!response.ok) {
-        throw new Error(`Failed to fetch script: ${response.statusText}`);
-      }
-
-      // Get the script content as text
-      const scriptContent = await response.text();
-
-      // Return the script with appropriate headers
-      return new Response(scriptContent, {
-        headers: {
-          'Content-Type': 'text/plain',
-          'Cache-Control': 'no-store, max-age=0' // Prevent caching for fresh content
-        },
-        status: 200
-      });
-    } catch (error) {
-      // Handle errors and return a user-friendly response
-      return new Response(`Error fetching script: ${error.message}\nPlease check the GitHub URL or try again later.`, {
-        headers: { 'Content-Type': 'text/plain' },
-        status: 500
-      });
-    }
-  }
-
-  // Return 404 for any other path
-  return new Response('Not found. Use /get to access the installer script.', {
-    headers: { 'Content-Type': 'text/plain' },
-    status: 404
-  });
+# Check for admin privileges
+if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Write-Warning "This script requires administrative privileges. Please run PowerShell as Administrator and try again."
+    exit 1
 }
+
+# Install Chocolatey if not present
+if (!(Get-Command choco -ErrorAction SilentlyContinue)) {
+    Write-Host "Installing Chocolatey..." -ForegroundColor Yellow
+    Set-ExecutionPolicy Bypass -Scope Process -Force
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+    iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    if ($?) { Write-Host "Chocolatey installed successfully!" -ForegroundColor Green }
+    else { Write-Error "Failed to install Chocolatey."; exit 1 }
+}
+
+# List of apps to install
+$apps = @(
+    "xampp"
+    "dbeaver"
+    "git"
+    "github-desktop"
+    "vscode"
+    "eclipse"
+    "pycharm"
+    "sublimetext3"
+    "octoparse"
+    "python --version=3.12.6"
+    "screenbuilder"  # Verify availability in Chocolatey
+    "scratch"
+    "veyon"
+)
+
+# Install apps with progress
+$total = $apps.Count
+$count = 0
+foreach ($app in $apps) {
+    $count++
+    Write-Progress -Activity "Installing Applications" -Status "$count of $total" -PercentComplete (($count / $total) * 100)
+    Write-Host "Installing $app..." -ForegroundColor Cyan
+    try {
+        choco install $app -y --ignore-checksums --no-progress
+        Write-Host "$app installed successfully" -ForegroundColor Green
+    }
+    catch {
+        Write-Warning "Failed to install $app : $_"
+    }
+}
+
+Write-Host "Installation complete! Enjoy your new tools." -ForegroundColor Green
