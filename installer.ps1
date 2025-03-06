@@ -1,52 +1,43 @@
 # List of applications to install
 $apps = @(
-    "Xampp",
-    "DBeaver",
-    "Git",
-    "GitHub Desktop",
-    "Visual Studio Code",
-    "Eclipse",
-    "PyCharm",
-    "Sublime Text",
-    "Octoparse",
-    "Python",
-    "ScreenBuilder",
-    "Scratch",
-    "Veyon"
+    "xampp",
+    "dbeaver",
+    "git",
+    "github-desktop",
+    "vscode",
+    "eclipse",
+    "pycharm",
+    "sublimetext4",
+    "octoparse",
+    "python",
+    "screenbuilder",
+    "scratch",
+    "veyon"
 )
 
-# Function to install winget if not already installed
-function Install-Winget {
-    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        Write-Host "winget is not installed. Installing winget..." -ForegroundColor Yellow
+# Function to install Chocolatey if not already installed
+function Install-Chocolatey {
+    if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+        Write-Host "Chocolatey is not installed. Installing Chocolatey..." -ForegroundColor Yellow
 
-        # Download the App Installer package from Microsoft Store
-        $url = "https://aka.ms/getwinget"
-        $installerPath = "$env:TEMP\winget-installer.msixbundle"
+        # Install Chocolatey
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-        Write-Host "Downloading winget installer..." -ForegroundColor Cyan
-        Invoke-WebRequest -Uri $url -OutFile $installerPath
-
-        # Install the App Installer package
-        Write-Host "Installing winget..." -ForegroundColor Cyan
-        Add-AppxPackage -Path $installerPath
-
-        # Clean up the installer
-        Remove-Item -Path $installerPath -Force
-
-        # Verify winget installation
-        if (Get-Command winget -ErrorAction SilentlyContinue) {
-            Write-Host "winget installed successfully." -ForegroundColor Green
+        # Verify Chocolatey installation
+        if (Get-Command choco -ErrorAction SilentlyContinue) {
+            Write-Host "Chocolatey installed successfully." -ForegroundColor Green
         } else {
-            Write-Host "Failed to install winget. Please install it manually." -ForegroundColor Red
+            Write-Host "Failed to install Chocolatey. Please install it manually." -ForegroundColor Red
             exit
         }
     } else {
-        Write-Host "winget is already installed." -ForegroundColor Green
+        Write-Host "Chocolatey is already installed." -ForegroundColor Green
     }
 }
 
-# Function to install applications using winget
+# Function to install applications using Chocolatey
 function Install-Apps {
     param (
         [string[]]$appList
@@ -54,7 +45,7 @@ function Install-Apps {
 
     foreach ($app in $appList) {
         Write-Host "Installing $app..." -ForegroundColor Cyan
-        winget install --id $app -e --silent
+        choco install $app -y
         if ($LASTEXITCODE -eq 0) {
             Write-Host "$app installed successfully." -ForegroundColor Green
         } else {
@@ -65,8 +56,8 @@ function Install-Apps {
 
 # Main script execution
 try {
-    # Ensure winget is installed
-    Install-Winget
+    # Ensure Chocolatey is installed
+    Install-Chocolatey
 
     # Install the applications
     Install-Apps -appList $apps
