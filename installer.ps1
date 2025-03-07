@@ -15,7 +15,6 @@ Write-Host "# Eclipse Ide for Java"
 Write-Host "# Xampp"
 Write-Host "# Scratch"
 Write-Host "# Screen Builder"
-Write-Host "# Veyon Client"
 Write-Host "------------------------------------------------------------------------------"
 Write-Host ""
 Write-Host "# If you have issue please contact us: support@digitalschool.tech"
@@ -48,7 +47,7 @@ if ($choice -eq "Y" -or $choice -eq "y") {
         "pycharm-community",
         "veyon",
         "eclipse-java-oxygen",
-        "xampp-81",
+        "xampp-81",  # XAMPP installation
         "scratch",
         "scenebuilder"
     )
@@ -60,7 +59,7 @@ if ($choice -eq "Y" -or $choice -eq "y") {
 
     Write-Host "Installing Octoparse..."
     try {
-        $octoparseUrl = "https://www.octoparse.com/download/octoparse_setup.exe"  # Update URL if needed
+        $octoparseUrl = "https://www.octoparse.com/download/octoparse_setup.exe"
         $output = "C:\temp\octoparse_setup.exe"
         if (-not (Test-Path "C:\temp")) {
             New-Item -ItemType Directory -Path "C:\temp" | Out-Null
@@ -73,6 +72,41 @@ if ($choice -eq "Y" -or $choice -eq "y") {
     } catch {
         Write-Host "Failed to download or run Octoparse installer: $_"
         Write-Host "Please download and install Octoparse manually from https://www.octoparse.com/download"
+    }
+
+    # Download and extract WordPress
+    Write-Host "Downloading and setting up WordPress..."
+    try {
+        $wordpressUrl = "https://wordpress.org/latest.zip"
+        $zipPath = "C:\temp\wordpress.zip"
+        $extractPath = "C:\xampp\htdocs"
+
+        # Create C:\temp if it doesn't exist
+        if (-not (Test-Path "C:\temp")) {
+            New-Item -ItemType Directory -Path "C:\temp" | Out-Null
+        }
+
+        # Download the WordPress ZIP file
+        Write-Host "Downloading WordPress from $wordpressUrl..."
+        Invoke-WebRequest -Uri $wordpressUrl -OutFile $zipPath
+
+        # Create htdocs directory if it doesn't exist
+        if (-not (Test-Path $extractPath)) {
+            New-Item -ItemType Directory -Path $extractPath | Out-Null
+        }
+
+        # Extract the ZIP file to htdocs
+        Write-Host "Extracting WordPress to $extractPath..."
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $extractPath)
+
+        # Clean up the ZIP file
+        Remove-Item -Path $zipPath -Force
+
+        Write-Host "WordPress has been extracted to $extractPath. Please proceed with manual installation via http://localhost after starting XAMPP."
+    } catch {
+        Write-Host "Failed to download or extract WordPress: $_"
+        Write-Host "Please download WordPress manually from https://wordpress.org/latest.zip and extract it to C:\xampp\htdocs"
     }
 
     Write-Host "All installations completed."
