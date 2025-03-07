@@ -37,12 +37,12 @@ if ($choice -eq "Y" -or $choice -eq "y") {
     # Install packages
     $packages = @(
         "googlechrome",
-        "notepadplusplus",
+        "notepadplusplus.install",
         "git",
         "winrar",
-        "visualstudiocode",
+        "vscode",
         "python312",
-        "nodejs",
+        "nodejs.install",
         "dbeaver",
         "github-desktop",
         "sublimetext3",
@@ -56,7 +56,7 @@ if ($choice -eq "Y" -or $choice -eq "y") {
 
     foreach ($package in $packages) {
         Write-Host "Installing $package..."
-        choco install $package -y --force --no-progress
+        choco install $package -A -y --force --no-progress
     }
 
     Write-Host "Installing Octoparse..."
