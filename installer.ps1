@@ -56,7 +56,7 @@ if ($choice -eq "Y" -or $choice -eq "y") {
 
     foreach ($package in $packages) {
         Write-Host "Installing $package..."
-        choco install $package -y --no-progress
+        choco install $package -y --force --no-progress
     }
 
     Write-Host "Installing Octoparse..."
