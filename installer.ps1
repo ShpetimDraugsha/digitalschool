@@ -15,6 +15,7 @@ Write-Host "# Eclipse Ide for Java"
 Write-Host "# Xampp"
 Write-Host "# Scratch"
 Write-Host "# Screen Builder"
+Write-Host "# Veyon Client"
 Write-Host "# WordPress"
 Write-Host "------------------------------------------------------------------------------"
 Write-Host ""
@@ -25,25 +26,15 @@ Write-Host "If you want to continue press (Y), to cancel press (C)"
 # Get user input and proceed only if Y is pressed
 $choice = Read-Host
 if ($choice -eq "Y" -or $choice -eq "y") {
-    # Step 1: Ensure Chocolatey is installed
-    Write-Host "Checking for Chocolatey installation..."
+    # Ensure Chocolatey is installed
     if (-not (Test-Path "$env:ProgramData\chocolatey")) {
-        try {
-            Write-Host "Chocolatey is not installed. Installing Chocolatey..."
-            Set-ExecutionPolicy Bypass -Scope Process -Force
-            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-            Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-            Write-Host "Chocolatey installed successfully."
-        } catch {
-            Write-Host "Failed to install Chocolatey: $_"
-            Write-Host "Please install Chocolatey manually and rerun the script."
-            exit 1
-        }
-    } else {
-        Write-Host "Chocolatey is already installed."
+        Write-Host "Chocolatey is not installed. Installing..."
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
     }
 
-    # Step 2: Install packages via Chocolatey
+    # Install packages
     $packages = @(
         "googlechrome",
         "notepadplusplus",
@@ -58,53 +49,33 @@ if ($choice -eq "Y" -or $choice -eq "y") {
         "pycharm-community",
         "veyon",
         "eclipse-java-oxygen",
-        "xampp-81",  # XAMPP installation
+        "xampp-81",
         "scratch",
         "scenebuilder"
     )
 
-    Write-Host "Starting package installations..."
     foreach ($package in $packages) {
-        Write-Host "Checking if $package is already installed..."
-        $isInstalled = choco list --local-only | Select-String $package
-        if ($isInstalled) {
-            Write-Host "$package is already installed. Skipping..."
-        } else {
-            try {
-                Write-Host "Installing $package..."
-                choco install $package -y --no-progress
-                if ($LASTEXITCODE -eq 0) {
-                    Write-Host "$package installed successfully."
-                } else {
-                    Write-Host "Failed to install $package. Exit code: $LASTEXITCODE"
-                }
-            } catch {
-                Write-Host "Error installing $package : $_"
-            }
-        }
+        Write-Host "Installing $package..."
+        choco install $package -y --no-progress
     }
 
-    # Step 3: Install Octoparse
     Write-Host "Installing Octoparse..."
     try {
-        $octoparseUrl = "https://www.octoparse.com/download/octoparse_setup.exe"
+        $octoparseUrl = "https://www.octoparse.com/download/octoparse_setup.exe"  # Update URL if needed
         $output = "C:\temp\octoparse_setup.exe"
         if (-not (Test-Path "C:\temp")) {
             New-Item -ItemType Directory -Path "C:\temp" | Out-Null
-            Write-Host "Created C:\temp directory."
         }
         Write-Host "Downloading Octoparse installer..."
         Invoke-WebRequest -Uri $octoparseUrl -OutFile $output
         Write-Host "Running Octoparse installer (manual interaction may be required)..."
         Start-Process -FilePath $output -Wait
         Write-Host "Octoparse installation initiated. Please complete any prompts."
-        # Clean up
-        Remove-Item -Path $output -Force -ErrorAction SilentlyContinue
     } catch {
         Write-Host "Failed to download or run Octoparse installer: $_"
         Write-Host "Please download and install Octoparse manually from https://www.octoparse.com/download"
     }
-
+    
     # Step 4: Download and extract WordPress
     Write-Host "Downloading and setting up WordPress..."
     try {
@@ -145,3 +116,4 @@ if ($choice -eq "Y" -or $choice -eq "y") {
 } else {
     Write-Host "Installation cancelled by user."
 }
+
